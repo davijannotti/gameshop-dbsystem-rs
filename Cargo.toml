@@ -1,0 +1,9 @@
+[package]
+name = "loja_jogos_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.39"
+inquire = "0.7.5"
+mysql = "26.0.0"
