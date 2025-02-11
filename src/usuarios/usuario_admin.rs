@@ -64,7 +64,7 @@ pub fn menu_usuario_admin(id_usuario_logado: i32) {
                 let senha = inquire::Text::new("Senha:").prompt().unwrap();
                 usuario::adicionar_usuario(&nome, &email, &senha);
             }
-            Ok("Atualizar Meu Usuário") => {
+            Ok("Atualizar Usuário") => {
                 let usuarios = listar_usuarios();
                 let usuarios_nomes: Vec<String> = usuarios.iter().map(|u| u.1.clone()).collect();
                 let escolha_usuario = Select::new("Escolha um Usuário:", usuarios_nomes)
@@ -407,11 +407,25 @@ pub fn menu_conquistas_admin() {
 
         match escolha {
             Ok("Listar Conquistas") => {
-                let id_jogo: i32 = inquire::Text::new("ID do Jogo:")
-                    .prompt()
-                    .unwrap()
-                    .parse()
+                let jogos = jogo::listar_jogos();
+                let jogos_nomes: Vec<String> = jogos.iter().map(|j| j.1.clone()).collect();
+
+                if jogos_nomes.is_empty() {
+                    println!("Nenhum jogo disponível.");
+                    continue;
+                }
+
+                let escolha_jogo =
+                    Select::new("Escolha um jogo para adicionar uma conquista:", jogos_nomes)
+                        .prompt()
+                        .unwrap();
+
+                let id_jogo = jogos
+                    .iter()
+                    .find(|j| j.1 == escolha_jogo)
+                    .map(|j| j.0)
                     .unwrap();
+
                 conquista::listar_conquistas(id_jogo);
             }
             Ok("Adicionar Conquista") => {

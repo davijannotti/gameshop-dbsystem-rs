@@ -1,0 +1,41 @@
+USE LojaJogosOnline;
+
+-- Inserção de Usuários
+INSERT INTO Usuario (nome, email, senha) VALUES 
+('Admin Master', 'admin@lojajogos.com', 'admin123'),  -- Admin
+('Jogador Comum', 'usuario@lojajogos.com', 'senha123'); -- Usuário comum
+
+-- Definir um administrador
+INSERT INTO UsuarioAdmin (id_usuario, nivel_acesso) VALUES 
+(1, 'Admin');
+
+-- Definir um usuário comum
+INSERT INTO UsuarioComum (id_usuario, data_criacao_conta) VALUES 
+(2, CURDATE());
+
+-- Inserção de Jogos
+INSERT INTO Jogo (titulo, descricao, desenvolvedor, data_lancamento, preco) VALUES 
+('Cyber Quest', 'Jogo de aventura futurista.', 'FuturoSoft', '2023-06-15', 199.99),
+('Kingdoms of War', 'RPG medieval de estratégia.', 'Knight Games', '2022-11-10', 149.99),
+('Space Raiders', 'Batalhas espaciais emocionantes.', 'Galactic Studios', '2024-01-20', 99.99),
+('Mystic Forest', 'Jogo de exploração e magia.', 'Enchanted Games', '2021-09-05', 129.99),
+('Speed Racer X', 'Corridas eletrizantes com carros tunados.', 'TurboSoft', '2020-12-18', 89.99);
+
+-- Inserção de Compras (Usuário comum comprando jogos)
+INSERT INTO Compra (id_usuario, id_jogo, data_compra, total, metodo_pagamento) VALUES 
+(2, 1, '2025-02-10 14:30:00', 199.99, 'Cartão de Crédito'),
+(2, 3, '2025-02-11 09:15:00', 99.99, 'Pix'),
+(2, 5, '2025-02-12 18:45:00', 89.99, 'Boleto Bancário');
+
+-- Inserção de Avaliações (Usuário comum avaliando jogos que comprou)
+INSERT INTO Avaliacao (id_usuario, id_jogo, nota, comentario, data_avaliacao) VALUES 
+(2, 1, 9, 'Jogo incrível, gráficos sensacionais!', '2025-02-11 16:00:00'),
+(2, 3, 7, 'Divertido, mas poderia ter mais fases.', '2025-02-12 10:30:00'),
+(2, 5, 8, 'Ótima jogabilidade, recomendo!', '2025-02-13 20:00:00');
+
+-- Inserção de Conquistas para Jogos
+INSERT INTO Conquista (id_jogo, id_conquista, nome, descricao) VALUES 
+(1, 1, 'Explorador do Futuro', 'Complete todas as missões principais.'),
+(3, 1, 'Piloto Estelar', 'Vença 10 batalhas no modo arcade.'),
+(3, 2, 'Caçador de Recompensas', 'Destrua 50 naves inimigas.'),
+(5, 1, 'Rei das Pistas', 'Ganhe 20 corridas no modo carreira.');

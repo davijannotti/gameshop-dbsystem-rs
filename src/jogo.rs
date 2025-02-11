@@ -14,7 +14,7 @@ pub fn listar_jogos() -> Vec<(i32, String, f64, String)> {
     if jogos.is_empty() {
         println!("Nenhum jogo disponível para compra.");
     } else {
-        println!("--- Jogos Disponíveis para Compra ---");
+        println!("--- Jogos Disponíveis ---");
         for (id, titulo, preco, data_lancamento) in &jogos {
             println!(
                 "ID: {} | Título: {} | Preço: {} | Data de Lançamento: {}",

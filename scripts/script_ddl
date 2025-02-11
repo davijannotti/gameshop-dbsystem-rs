@@ -1,0 +1,75 @@
+-- Criação do banco de dados
+CREATE DATABASE IF NOT EXISTS LojaJogosOnline;
+USE LojaJogosOnline;
+
+-- Tabela Usuario
+CREATE TABLE Usuario (
+    id_usuario INT NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id_usuario)
+);
+
+-- Tabela Jogo
+CREATE TABLE Jogo (
+    id_jogo INT NOT NULL AUTO_INCREMENT,
+    titulo VARCHAR(150) NOT NULL,
+    descricao TEXT,
+    desenvolvedor VARCHAR(100),
+    data_lancamento DATE,
+    preco DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (id_jogo)
+);
+
+-- Tabela Compra
+CREATE TABLE Compra (
+    id_compra INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_jogo INT NOT NULL,
+    data_compra DATETIME NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    metodo_pagamento VARCHAR(50) NOT NULL,
+    PRIMARY KEY (id_compra),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_jogo) REFERENCES Jogo(id_jogo) ON DELETE CASCADE
+);
+
+-- Tabela Avaliacao
+CREATE TABLE Avaliacao (
+    id_avaliacao INT NOT NULL AUTO_INCREMENT,
+    id_usuario INT NOT NULL,
+    id_jogo INT NOT NULL,
+    nota INT NOT NULL,
+    comentario TEXT,
+    data_avaliacao DATETIME NOT NULL,
+    PRIMARY KEY (id_avaliacao),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_jogo) REFERENCES Jogo(id_jogo) ON DELETE CASCADE
+);
+
+-- Tabela Conquista (Entidade Fraca)
+CREATE TABLE Conquista (
+    id_jogo INT NOT NULL,
+    id_conquista INT NOT NULL,
+    nome VARCHAR(150) NOT NULL,
+    descricao TEXT,
+    PRIMARY KEY (id_jogo, id_conquista),
+    FOREIGN KEY (id_jogo) REFERENCES Jogo(id_jogo) ON DELETE CASCADE
+);
+
+-- Tabela UsuarioAdmin
+CREATE TABLE UsuarioAdmin (
+    id_usuario INT NOT NULL,
+    nivel_acesso VARCHAR(50) NOT NULL,
+    PRIMARY KEY (id_usuario),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE
+);
+
+-- Tabela UsuarioComum
+CREATE TABLE UsuarioComum (
+    id_usuario INT NOT NULL,
+    data_criacao_conta DATE NOT NULL,
+    PRIMARY KEY (id_usuario),
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE
+);
