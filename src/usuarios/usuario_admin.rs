@@ -1,28 +1,43 @@
 use inquire::Select;
 
-use crate::{avaliacao, compra::{self, listar_compras, listar_compras_por_usuario}, conquista::{self, listar_conquistas}, criar_conta, jogo::{self, listar_jogos}};
+use crate::{
+    avaliacao,
+    compra::{self, listar_compras_por_usuario},
+    conquista::{self, listar_conquistas},
+    criar_conta,
+    jogo::{self, listar_jogos},
+};
 
 use super::usuario::{self, listar_usuarios};
 
 pub fn menu_principal_admin(id_usuario_logado: i32) {
-    let opcoes = vec!["Usuário", "Jogo", "Criar Conta", "Sair"];
+    let opcoes = vec![
+        "Gerenciar Usuários",
+        "Gerenciar Jogos",
+        "Gerenciar Compras",
+        "Gerenciar Conquistas",
+        "Gerenciar Avaliações",
+        "Sair",
+    ];
 
     loop {
         let escolha = Select::new("Escolha uma categoria:", opcoes.clone()).prompt();
 
         match escolha {
-            Ok("Usuário") => menu_usuario_admin(id_usuario_logado),
-            Ok("Jogo") => menu_jogo_admin(),
-            Ok("Criar Conta") => criar_conta(),
+            Ok("Gerenciar Usuários") => menu_usuario_admin(id_usuario_logado),
+            Ok("Gerenciar Jogos") => menu_jogo_admin(),
+            Ok("Gerenciar Compras") => {
+                menu_compras_admin();
+            }
+            Ok("Gerenciar Conquistas") => menu_conquistas_admin(),
+            Ok("Gerenciar Avaliações") => menu_avaliacoes_admin(),
             Ok("Sair") => break,
             _ => println!("Opção inválida"),
         }
     }
 }
 
-// Menu CRUD para Usuários
 pub fn menu_usuario_admin(id_usuario_logado: i32) {
-    // Verificando se o usuário logado é administrador
     let is_admin = usuario::is_admin(id_usuario_logado);
 
     let opcoes = if is_admin {
@@ -31,7 +46,6 @@ pub fn menu_usuario_admin(id_usuario_logado: i32) {
             "Adicionar Usuário",
             "Atualizar Usuário",
             "Remover Usuário",
-            "Compra",
             "Voltar",
         ]
     } else {
@@ -106,24 +120,18 @@ pub fn menu_usuario_admin(id_usuario_logado: i32) {
                     .unwrap();
                 usuario::remover_usuario(id_usuario);
             }
-            Ok("Compra") => {
-                menu_compras_admin();
-            }
             Ok("Voltar") => break,
             _ => println!("Opção inválida"),
         }
     }
 }
 
-// Menu CRUD para Jogos, incluindo Avaliações e Conquistas
 pub fn menu_jogo_admin() {
     let opcoes = vec![
         "Listar Jogos",
         "Adicionar Jogo",
         "Atualizar Jogo",
         "Remover Jogo",
-        "Gerenciar Conquistas",
-        "Gerenciar Avaliações",
         "Voltar",
     ];
 
@@ -154,9 +162,8 @@ pub fn menu_jogo_admin() {
                     println!("Nenhum jogo disponível para atualizar.");
                     continue;
                 }
-                
-                let escolha_jogo =
-                Select::new("Escolha um Usuário para Remover:", jogos_nomes)
+
+                let escolha_jogo = Select::new("Escolha um Usuário para Remover:", jogos_nomes)
                     .prompt()
                     .unwrap();
 
@@ -208,8 +215,7 @@ pub fn menu_jogo_admin() {
                     .unwrap();
                 jogo::remover_jogo(id_jogo);
             }
-            Ok("Gerenciar Conquistas") => menu_conquistas_admin(),
-            Ok("Gerenciar Avaliações") => menu_avaliacoes_admin(),
+
             Ok("Voltar") => break,
             _ => println!("Opção inválida"),
         }
@@ -286,25 +292,26 @@ pub fn menu_compras_admin() {
                     .map(|u| u.0)
                     .unwrap();
 
-                    let compras = listar_compras_por_usuario(id_usuario);
-            
-                    let compras_info: Vec<String> = compras.iter().map(|(id, titulo)| {
-                        format!("ID do Jogo: {} | Título: {}", id, titulo)
-                    }).collect();
-                
-                    let escolha_compra = Select::new("Escolha uma Compra:", compras_info)
-                        .prompt()
-                        .unwrap();
-                
-                    let id_compra = compras
-                        .iter()
-                        .find(|(id, titulo)| {
-                            let escolha = format!("ID do Jogo: {} | Título: {}", id, titulo);
-                            escolha == escolha_compra
-                        })
-                        .map(|(id, _)| *id) 
-                        .unwrap();
-                    
+                let compras = listar_compras_por_usuario(id_usuario);
+
+                let compras_info: Vec<String> = compras
+                    .iter()
+                    .map(|(id, titulo)| format!("ID do Jogo: {} | Título: {}", id, titulo))
+                    .collect();
+
+                let escolha_compra = Select::new("Escolha uma Compra:", compras_info)
+                    .prompt()
+                    .unwrap();
+
+                let id_compra = compras
+                    .iter()
+                    .find(|(id, titulo)| {
+                        let escolha = format!("ID do Jogo: {} | Título: {}", id, titulo);
+                        escolha == escolha_compra
+                    })
+                    .map(|(id, _)| *id)
+                    .unwrap();
+
                 let total: Option<f64> =
                     inquire::Text::new("Novo Total da Compra (deixe vazio para não alterar):")
                         .prompt()
@@ -322,35 +329,36 @@ pub fn menu_compras_admin() {
                 let escolha_usuario = Select::new("Escolha um Usuário:", usuarios_nomes)
                     .prompt()
                     .unwrap();
-            
+
                 let id_usuario = usuarios
                     .iter()
                     .find(|u| u.1 == escolha_usuario)
                     .map(|u| u.0)
                     .unwrap();
-            
+
                 let compras = listar_compras_por_usuario(id_usuario);
-            
-                let compras_info: Vec<String> = compras.iter().map(|(id, titulo)| {
-                    format!("ID do Jogo: {} | Título: {}", id, titulo)
-                }).collect();
-            
+
+                let compras_info: Vec<String> = compras
+                    .iter()
+                    .map(|(id, titulo)| format!("ID do Jogo: {} | Título: {}", id, titulo))
+                    .collect();
+
                 let escolha_compra = Select::new("Escolha uma Compra:", compras_info)
                     .prompt()
                     .unwrap();
-            
+
                 let id_compra = compras
                     .iter()
                     .find(|(id, titulo)| {
                         let escolha = format!("ID do Jogo: {} | Título: {}", id, titulo);
                         escolha == escolha_compra
                     })
-                    .map(|(id, _)| *id) 
+                    .map(|(id, _)| *id)
                     .unwrap();
-            
+
                 compra::remover_compra(id_compra);
             }
-            
+
             Ok("Voltar") => break,
             _ => println!("Opção inválida"),
         }
@@ -386,7 +394,6 @@ pub fn menu_listar_jogos_admin() {
     }
 }
 
-// Menu CRUD para Conquistas de um Jogo
 pub fn menu_conquistas_admin() {
     let opcoes = vec![
         "Listar Conquistas",
@@ -417,9 +424,10 @@ pub fn menu_conquistas_admin() {
                     continue;
                 }
 
-                let escolha_jogo = Select::new("Escolha um jogo para adicionar uma conquista:", jogos_nomes)
-                    .prompt()
-                    .unwrap();
+                let escolha_jogo =
+                    Select::new("Escolha um jogo para adicionar uma conquista:", jogos_nomes)
+                        .prompt()
+                        .unwrap();
 
                 let id_jogo = jogos
                     .iter()
@@ -444,23 +452,22 @@ pub fn menu_conquistas_admin() {
                     .map(|u| u.0)
                     .unwrap();
 
-                    let conquistas = listar_conquistas(id_jogo);
-                let conquistas_info: Vec<String> = conquistas.iter().map(|(_, _, nome, _)| {
-                    nome.clone()
-                }).collect();
-                
-                // Permitir que o usuário escolha uma conquista
+                let conquistas = listar_conquistas(id_jogo);
+                let conquistas_info: Vec<String> = conquistas
+                    .iter()
+                    .map(|(_, _, nome, _)| nome.clone())
+                    .collect();
+
                 let escolha_conquista = Select::new("Escolha uma Conquista:", conquistas_info)
                     .prompt()
                     .unwrap();
-                
-                // Encontrar o ID da conquista escolhida
+
                 let id_conquista = conquistas
                     .iter()
                     .find(|(_, _, nome, _)| *nome == escolha_conquista)
                     .map(|(_, id_conquista, _, _)| *id_conquista)
                     .unwrap();
-                    
+
                 let novo_nome: Option<String> =
                     inquire::Text::new("Novo Nome da Conquista (deixe vazio para não alterar):")
                         .prompt()
@@ -473,46 +480,41 @@ pub fn menu_conquistas_admin() {
                 conquista::atualizar_conquista(id_jogo, id_conquista, novo_nome, nova_descricao);
             }
             Ok("Remover Conquista") => {
-                // Listar os jogos disponíveis
                 let jogos = listar_jogos();
-                let jogos_info: Vec<String> = jogos.iter().map(|(_, titulo, _, _)| {
-                    titulo.clone()
-                }).collect();
-                
-                // Permitir que o usuário escolha um jogo
+                let jogos_info: Vec<String> = jogos
+                    .iter()
+                    .map(|(_, titulo, _, _)| titulo.clone())
+                    .collect();
+
                 let escolha_jogo = Select::new("Escolha um Jogo:", jogos_info)
                     .prompt()
                     .unwrap();
-                
-                // Encontrar o ID do jogo escolhido
+
                 let id_jogo = jogos
                     .iter()
                     .find(|(_, titulo, _, _)| *titulo == escolha_jogo)
                     .map(|(id, _, _, _)| *id)
                     .unwrap();
-                
-                // Listar as conquistas do jogo escolhido
+
                 let conquistas = listar_conquistas(id_jogo);
-                let conquistas_info: Vec<String> = conquistas.iter().map(|(_, _, nome, _)| {
-                    nome.clone()
-                }).collect();
-                
-                // Permitir que o usuário escolha uma conquista
+                let conquistas_info: Vec<String> = conquistas
+                    .iter()
+                    .map(|(_, _, nome, _)| nome.clone())
+                    .collect();
+
                 let escolha_conquista = Select::new("Escolha uma Conquista:", conquistas_info)
                     .prompt()
                     .unwrap();
-                
-                // Encontrar o ID da conquista escolhida
+
                 let id_conquista = conquistas
                     .iter()
                     .find(|(_, _, nome, _)| *nome == escolha_conquista)
                     .map(|(_, id_conquista, _, _)| *id_conquista)
                     .unwrap();
-                
-                // Remover a conquista escolhida
+
                 conquista::remover_conquista(id_jogo, id_conquista);
             }
-                  
+
             Ok("Voltar") => break,
             _ => println!("Opção inválida"),
         }
@@ -522,8 +524,9 @@ pub fn menu_conquistas_admin() {
 pub fn menu_avaliacoes_admin() {
     let opcoes = vec![
         "Listar Avaliações",
-        "Adicionar Avaliação",
-        "Remover Avaliação",
+        "Adicionar Avaliações",
+        "Remover Avaliações",
+        "Atualizar Avaliações",
         "Voltar",
     ];
 
@@ -532,47 +535,140 @@ pub fn menu_avaliacoes_admin() {
 
         match escolha {
             Ok("Listar Avaliações") => avaliacao::listar_avaliacoes(),
-            Ok("Adicionar Avaliação") => {
-                let id_usuario: i32 = inquire::Text::new("ID do Usuário:")
+            Ok("Adicionar Avaliações") => {
+                let jogos = jogo::listar_jogos();
+                let jogos_nomes: Vec<String> = jogos.iter().map(|c| c.1.clone()).collect();
+
+                let escolha_jogo =
+                    Select::new("Escolha um jogo para adicionar avaliação:", jogos_nomes)
+                        .prompt()
+                        .unwrap();
+
+                let usuarios = listar_usuarios();
+                let usuarios_nomes: Vec<String> = usuarios.iter().map(|u| u.1.clone()).collect();
+                let escolha_usuario = Select::new("Escolha um Usuário:", usuarios_nomes)
                     .prompt()
-                    .unwrap()
-                    .parse()
                     .unwrap();
-                let id_jogo: i32 = inquire::Text::new("ID do Jogo:")
-                    .prompt()
-                    .unwrap()
-                    .parse()
+
+                let id_usuario = usuarios
+                    .iter()
+                    .find(|u| u.1 == escolha_usuario)
+                    .map(|u| u.0)
                     .unwrap();
+
+                let id_jogo = jogos
+                    .iter()
+                    .find(|c| c.1 == escolha_jogo)
+                    .map(|c| c.0)
+                    .unwrap();
+
                 let nota: i32 = inquire::Text::new("Nota (1-10):")
                     .prompt()
                     .unwrap()
                     .parse()
                     .unwrap();
                 let comentario = inquire::Text::new("Comentário:").prompt().unwrap();
+
                 avaliacao::adicionar_avaliacao(id_usuario, id_jogo, nota, Some(&comentario));
             }
-            Ok("Remover Avaliação") => {
-                let id_avaliacao: i32 = inquire::Text::new("ID da Avaliação:")
+            Ok("Remover Avaliações") => {
+                // Listar todos os jogos
+                let jogos = jogo::listar_jogos();
+                let jogos_nomes: Vec<String> = jogos.iter().map(|c| c.1.clone()).collect();
+            
+                // Permitir que o usuário escolha um jogo
+                let escolha_jogo = Select::new("Escolha um Jogo:", jogos_nomes)
                     .prompt()
-                    .unwrap()
-                    .parse()
                     .unwrap();
+            
+                // Encontrar o ID do jogo escolhido
+                let id_jogo = jogos
+                    .iter()
+                    .find(|c| c.1 == escolha_jogo)
+                    .map(|c| c.0)
+                    .unwrap();
+            
+                // Listar avaliações do jogo escolhido
+                let avaliacoes = avaliacao::listar_avaliacoes_por_jogo(id_jogo);
+                let avaliacoes_info: Vec<String> = avaliacoes
+                    .iter()
+                    .map(|(id, nota, comentario)| {
+                        format!(
+                            "ID: {} | Nota: {} | Comentário: {}",
+                            id,
+                            nota,
+                            comentario.as_deref().unwrap_or("Sem comentário")
+                        )
+                    })
+                    .collect();
+            
+                // Permitir que o usuário escolha uma avaliação
+                let escolha_avaliacao = Select::new("Escolha uma Avaliação:", avaliacoes_info)
+                    .prompt()
+                    .unwrap();
+            
+                // Encontrar o ID da avaliação escolhida
+                let id_avaliacao = avaliacoes
+                    .iter()
+                    .find(|(id, nota, comentario)| {
+                        format!("ID: {} | Nota: {} | Comentário: {}", id, nota, comentario.as_deref().unwrap_or("Sem comentário")) == escolha_avaliacao
+                    })
+                    .map(|(id, _, _)| *id)
+                    .unwrap();
+            
+                // Remover a avaliação escolhida
                 avaliacao::remover_avaliacao(id_avaliacao);
             }
-            Ok("Atualizar Avaliação") => {
-                let id_avaliacao: i32 = inquire::Text::new("ID da Avaliação:")
+            
+            Ok("Atualizar Avaliações") => {
+                let jogos = jogo::listar_jogos();
+                let jogos_nomes: Vec<String> = jogos.iter().map(|c| c.1.clone()).collect();
+
+                let escolha_jogo =
+                    Select::new("Escolha um jogo para atualizar avaliação:", jogos_nomes)
+                        .prompt()
+                        .unwrap();
+
+                let id_jogo = jogos
+                    .iter()
+                    .find(|c| c.1 == escolha_jogo)
+                    .map(|c| c.0)
+                    .unwrap();
+
+                let avaliacoes = avaliacao::listar_avaliacoes_por_jogo(id_jogo);
+                let avaliacoes_info: Vec<String> = avaliacoes
+                    .iter()
+                    .map(|(id, nota, comentario)| {
+                        format!(
+                            "ID: {} | Nota: {} | Comentário: {}",
+                            id,
+                            nota,
+                            comentario.as_deref().unwrap_or("Sem comentário")
+                        )
+                    })
+                    .collect();
+
+                let escolha_avaliacao =
+                    Select::new("Escolha uma avaliação para atualizar:", avaliacoes_info)
+                        .prompt()
+                        .unwrap();
+
+                let id_avaliacao = avaliacoes
+                    .iter()
+                    .find(|(id, nota, comentario)| format!("ID: {} | Nota: {} | Comentário: {}", id,nota, comentario.as_deref().unwrap_or("Sem comentário")) == escolha_avaliacao)
+                    .map(|(id, _, _)| *id)
+                    .unwrap();
+
+                let nova_nota: i32 = inquire::Text::new("Nova Nota (1-10):")
                     .prompt()
                     .unwrap()
                     .parse()
                     .unwrap();
-                let nota: i32 = inquire::Text::new("Nova Nota (1-10):")
-                    .prompt()
-                    .unwrap()
-                    .parse()
-                    .unwrap();
-                let comentario = inquire::Text::new("Novo Comentário:").prompt().unwrap();
-                avaliacao::atualizar_avaliacao(id_avaliacao, nota, Some(&comentario));
+                let novo_comentario = inquire::Text::new("Novo Comentário:").prompt().unwrap();
+
+                avaliacao::atualizar_avaliacao(id_avaliacao, nova_nota, Some(&novo_comentario));
             }
+
             Ok("Voltar") => break,
             _ => println!("Opção inválida"),
         }

@@ -33,7 +33,6 @@ pub fn criar_conta() {
 
     println!("✅ Conta criada com sucesso!");
 
-    // Se o admin estiver criando um novo admin, atribuir nível de acesso
     if is_admin {
         let query_admin = "INSERT INTO UsuarioAdmin (id_usuario, nivel_acesso) 
                             VALUES ((SELECT id_usuario FROM Usuario WHERE email = ?), ?)";

@@ -2,7 +2,6 @@ use inquire::Select;
 
 use crate::{avaliacao, compra, jogo};
 
-// Menu para usuários comuns
 pub fn menu_usuario_comum(id_usuario_logado: i32) {
     let opcoes = vec![
         "Explorar Catálogo",
@@ -24,7 +23,6 @@ pub fn menu_usuario_comum(id_usuario_logado: i32) {
     }
 }
 
-// Menu para explorar o catálogo de jogos (usuários comuns)
 pub fn menu_explorar_catalogo() {
     let opcoes = vec![
         "Listar Todos os Jogos",
@@ -61,13 +59,12 @@ pub fn menu_compras_comum(id_usuario_logado: i32) {
         let escolha = Select::new("Gerenciamento de Compras:", opcoes.clone()).prompt();
 
         match escolha {
-            Ok("Listar Compras") => {
+            Ok("Listar Suas Compras") => {
                 {
                     compra::listar_compras_por_usuario(id_usuario_logado)
                 };
             }
-            Ok("Adicionar Compra") => {
-                // Listar jogos disponíveis
+            Ok("Comprar Jogo") => {
                 let jogos = jogo::listar_jogos();
                 let jogos_nomes: Vec<String> = jogos.iter().map(|j| j.1.clone()).collect();
 
@@ -76,12 +73,10 @@ pub fn menu_compras_comum(id_usuario_logado: i32) {
                     continue;
                 }
 
-                // Exibir jogos para o usuário escolher
                 let escolha_jogo = Select::new("Escolha um jogo para comprar:", jogos_nomes)
                     .prompt()
                     .unwrap();
 
-                // Encontrar o ID do jogo escolhido
                 let id_jogo = jogos
                     .iter()
                     .find(|j| j.1 == escolha_jogo)
@@ -94,10 +89,8 @@ pub fn menu_compras_comum(id_usuario_logado: i32) {
                     .map(|j| j.2)
                     .unwrap();
 
-                // Solicitar método de pagamento
                 let metodo_pagamento = inquire::Text::new("Método de Pagamento:").prompt().unwrap();
 
-                // Realizar a compra
                 compra::adicionar_compra(id_usuario_logado, id_jogo, preco_jogo, &metodo_pagamento);
             }
             Ok("Voltar") => break,
@@ -124,7 +117,6 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
             }
 
             Ok("Adicionar Avaliação") => {
-                // Listar apenas os jogos comprados pelo usuário
                 let compras = compra::listar_compras_por_usuario(id_usuario_logado);
                 let jogos_nomes: Vec<String> = compras.iter().map(|c| c.1.clone()).collect();
 
@@ -133,19 +125,16 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
                     continue;
                 }
 
-                // Exibir jogos comprados para escolha
                 let escolha_jogo = Select::new("Escolha um jogo para avaliar:", jogos_nomes)
                     .prompt()
                     .unwrap();
 
-                // Encontrar o ID do jogo escolhido
                 let id_jogo = compras
                     .iter()
                     .find(|c| c.1 == escolha_jogo)
                     .map(|c| c.0)
                     .unwrap();
 
-                // Coletar nota e comentário
                 let nota: i32 = inquire::Text::new("Nota (1-10):")
                     .prompt()
                     .unwrap()
@@ -153,12 +142,10 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
                     .unwrap();
                 let comentario = inquire::Text::new("Comentário:").prompt().unwrap();
 
-                // Adicionar avaliação
                 avaliacao::adicionar_avaliacao(id_usuario_logado, id_jogo, nota, Some(&comentario));
             }
 
             Ok("Remover Avaliação") => {
-                // Listar avaliações do usuário
                 let avaliacoes = avaliacao::listar_avaliacoes_por_usuario(id_usuario_logado);
 
                 if avaliacoes.is_empty() {
@@ -166,7 +153,6 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
                     continue;
                 }
 
-                // Exibir avaliações disponíveis
                 let avaliacoes_texto: Vec<String> = avaliacoes
                     .iter()
                     .map(|(id, jogo, nota, comentario)| {
@@ -180,13 +166,11 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
                     })
                     .collect();
 
-                // Permitir escolha da avaliação para remoção
                 let escolha_avaliacao =
                     Select::new("Escolha uma avaliação para remover:", avaliacoes_texto)
                         .prompt()
                         .unwrap();
 
-                // Encontrar o ID da avaliação escolhida
                 let id_avaliacao = avaliacoes
                     .iter()
                     .find(|(id, jogo, _, _)| escolha_avaliacao.contains(jogo))
@@ -197,7 +181,6 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
             }
 
             Ok("Atualizar Avaliação") => {
-                // Listar avaliações do usuário
                 let avaliacoes = avaliacao::listar_avaliacoes_por_usuario(id_usuario_logado);
 
                 if avaliacoes.is_empty() {
@@ -205,7 +188,6 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
                     continue;
                 }
 
-                // Exibir avaliações disponíveis
                 let avaliacoes_texto: Vec<String> = avaliacoes
                     .iter()
                     .map(|(id, jogo, nota, comentario)| {
@@ -219,20 +201,17 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
                     })
                     .collect();
 
-                // Permitir escolha da avaliação para atualizar
                 let escolha_avaliacao =
                     Select::new("Escolha uma avaliação para atualizar:", avaliacoes_texto)
                         .prompt()
                         .unwrap();
 
-                // Encontrar o ID da avaliação escolhida
                 let id_avaliacao = avaliacoes
                     .iter()
                     .find(|(id, jogo, _, _)| escolha_avaliacao.contains(jogo))
                     .map(|(id, _, _, _)| *id)
                     .unwrap();
 
-                // Solicitar nova nota e comentário
                 let nova_nota: i32 = inquire::Text::new("Nova Nota (1-10):")
                     .prompt()
                     .unwrap()

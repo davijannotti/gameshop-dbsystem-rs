@@ -1,30 +1,54 @@
 use crate::database::conectar_mysql;
 use mysql::prelude::*;
 
+pub fn verificar_compra_existente(id_usuario: i32, id_jogo: i32) -> bool {
+    let mut conn = conectar_mysql();
+
+    let query = "SELECT COUNT(*) FROM Compra WHERE id_usuario = ? AND id_jogo = ?";
+    let count: u64 = conn
+        .exec_first(query, (id_usuario, id_jogo))
+        .expect("Erro ao verificar compra existente")
+        .unwrap_or(0);
+
+    count > 0
+}
+
+pub fn adicionar_compra(id_usuario: i32, id_jogo: i32, total: f64, metodo_pagamento: &str) {
+    if verificar_compra_existente(id_usuario, id_jogo) {
+        println!("Você já comprou este jogo!");
+        return;
+    }
+
+    let mut conn = conectar_mysql();
+    let query = "INSERT INTO Compra (id_usuario, id_jogo, data_compra, total, metodo_pagamento) VALUES (?, ?, NOW(), ?, ?)";
+
+    conn.exec_drop(query, (id_usuario, id_jogo, total, metodo_pagamento))
+        .expect("Erro ao inserir compra");
+
+    println!("✅ Compra cadastrada com sucesso!");
+}
+
 pub fn listar_compras() -> Vec<(i32, i32, String, String, f64, String)> {
     let mut conn = conectar_mysql();
-    
+
     let query = "
         SELECT c.id_compra, c.id_usuario, j.titulo, c.data_compra, c.total, c.metodo_pagamento 
         FROM Compra c 
         JOIN Jogo j ON c.id_jogo = j.id_jogo
     ";
 
-    // Recupera as compras e as mapeia para o vetor
     let compras: Vec<(i32, i32, String, String, f64, String)> = conn
         .query_map(query, |(id, usuario, titulo, data, total, pagamento)| {
             (id, usuario, titulo, data, total, pagamento)
         })
         .expect("Erro ao buscar compras");
 
-        for (id_compra, usuario,titulo,data,total, pagamento) in &compras {
-            println!("ID da Compra: {} | ID do Usuário: {} |  Titulo: {} | Data: {} | Preço R$: {} | Pagamento: {} |", id_compra, usuario, titulo, data, total, pagamento);
-        }
+    for (id_compra, usuario, titulo, data, total, pagamento) in &compras {
+        println!("ID da Compra: {} | ID do Usuário: {} |  Titulo: {} | Data: {} | Preço R$: {} | Pagamento: {} |", id_compra, usuario, titulo, data, total, pagamento);
+    }
 
-    // Retorna o vetor de compras
     compras
 }
-
 
 pub fn listar_compras_por_usuario(id_usuario: i32) -> Vec<(i32, String)> {
     let mut conn = conectar_mysql();
@@ -43,17 +67,7 @@ pub fn listar_compras_por_usuario(id_usuario: i32) -> Vec<(i32, String)> {
         println!("ID do Jogo: {} | Nome do Jogo: {}", id_jogo, titulo_jogo);
     }
 
-    return compras;
-}
-
-pub fn adicionar_compra(id_usuario: i32, id_jogo: i32, total: f64, metodo_pagamento: &str) {
-    let mut conn = conectar_mysql();
-    let query = "INSERT INTO Compra (id_usuario, id_jogo, data_compra, total, metodo_pagamento) VALUES (?, ?, NOW(), ?, ?)";
-
-    conn.exec_drop(query, (id_usuario, id_jogo, total, metodo_pagamento))
-        .expect("Erro ao inserir compra");
-
-    println!("✅ Compra cadastrada com sucesso!");
+    compras
 }
 
 pub fn atualizar_compra(id_compra: i32, total: Option<f64>, metodo_pagamento: Option<&str>) {

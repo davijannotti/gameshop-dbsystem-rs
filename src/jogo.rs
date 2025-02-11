@@ -52,7 +52,7 @@ pub fn atualizar_jogo(
     descricao: &str,
     desenvolvedor: &str,
     preco: f64,
-    data_lancamento: &str, // Adicionando o parâmetro para a data de lançamento
+    data_lancamento: &str, 
 ) {
     let mut conn = conectar_mysql();
 

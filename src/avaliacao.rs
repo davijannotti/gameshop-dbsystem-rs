@@ -83,6 +83,34 @@ pub fn listar_avaliacoes_por_usuario(id_usuario: i32) -> Vec<(i32, String, i32, 
     return avaliacoes;
 }
 
+pub fn listar_avaliacoes_por_jogo(id_jogo: i32) -> Vec<(i32, i32, Option<String>)> {
+    let mut conn = conectar_mysql();
+
+    let query = "
+        SELECT a.id_avaliacao, a.id_usuario, a.comentario 
+        FROM Avaliacao a
+        WHERE a.id_jogo = ?
+    ";
+
+    let avaliacoes: Vec<(i32, i32, Option<String>)> = conn
+        .exec_map(query, (id_jogo,), |(id_avaliacao, id_usuario, comentario)| {
+            (id_avaliacao, id_usuario, comentario)
+        })
+        .expect("Erro ao buscar avaliações do jogo");
+
+    for (id_avaliacao, id_usuario, comentario) in &avaliacoes {
+        println!(
+            "ID da Avaliação: {} | ID do Usuário: {} | Comentário: {}",
+            id_avaliacao,
+            id_usuario,
+            comentario.as_deref().unwrap_or("Sem comentário")
+        );
+    }
+
+    avaliacoes
+}
+
+
 pub fn adicionar_avaliacao(id_usuario: i32, id_jogo: i32, nota: i32, comentario: Option<&str>) {
     let mut conn = conectar_mysql();
     let query = "INSERT INTO Avaliacao (id_usuario, id_jogo, nota, comentario, data_avaliacao) VALUES (?, ?, ?, ?, NOW())";

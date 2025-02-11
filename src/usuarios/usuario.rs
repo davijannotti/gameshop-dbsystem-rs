@@ -72,7 +72,6 @@ pub fn remover_usuario(id_usuario: i32) {
     println!("✅ Usuário removido com sucesso!");
 }
 
-// Função para verificar se o usuário é administrador
 pub fn is_admin(id_usuario: i32) -> bool {
     let mut conn = conectar_mysql();
     let query = "SELECT 1 FROM UsuarioAdmin WHERE id_usuario = ?";
