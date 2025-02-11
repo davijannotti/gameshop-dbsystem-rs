@@ -4,7 +4,6 @@ use crate::{
     avaliacao,
     compra::{self, listar_compras_por_usuario},
     conquista::{self, listar_conquistas},
-    criar_conta,
     jogo::{self, listar_jogos},
 };
 
@@ -575,19 +574,19 @@ pub fn menu_avaliacoes_admin() {
                 // Listar todos os jogos
                 let jogos = jogo::listar_jogos();
                 let jogos_nomes: Vec<String> = jogos.iter().map(|c| c.1.clone()).collect();
-            
+
                 // Permitir que o usuário escolha um jogo
                 let escolha_jogo = Select::new("Escolha um Jogo:", jogos_nomes)
                     .prompt()
                     .unwrap();
-            
+
                 // Encontrar o ID do jogo escolhido
                 let id_jogo = jogos
                     .iter()
                     .find(|c| c.1 == escolha_jogo)
                     .map(|c| c.0)
                     .unwrap();
-            
+
                 // Listar avaliações do jogo escolhido
                 let avaliacoes = avaliacao::listar_avaliacoes_por_jogo(id_jogo);
                 let avaliacoes_info: Vec<String> = avaliacoes
@@ -601,25 +600,30 @@ pub fn menu_avaliacoes_admin() {
                         )
                     })
                     .collect();
-            
+
                 // Permitir que o usuário escolha uma avaliação
                 let escolha_avaliacao = Select::new("Escolha uma Avaliação:", avaliacoes_info)
                     .prompt()
                     .unwrap();
-            
+
                 // Encontrar o ID da avaliação escolhida
                 let id_avaliacao = avaliacoes
                     .iter()
                     .find(|(id, nota, comentario)| {
-                        format!("ID: {} | Nota: {} | Comentário: {}", id, nota, comentario.as_deref().unwrap_or("Sem comentário")) == escolha_avaliacao
+                        format!(
+                            "ID: {} | Nota: {} | Comentário: {}",
+                            id,
+                            nota,
+                            comentario.as_deref().unwrap_or("Sem comentário")
+                        ) == escolha_avaliacao
                     })
                     .map(|(id, _, _)| *id)
                     .unwrap();
-            
+
                 // Remover a avaliação escolhida
                 avaliacao::remover_avaliacao(id_avaliacao);
             }
-            
+
             Ok("Atualizar Avaliações") => {
                 let jogos = jogo::listar_jogos();
                 let jogos_nomes: Vec<String> = jogos.iter().map(|c| c.1.clone()).collect();
@@ -655,7 +659,14 @@ pub fn menu_avaliacoes_admin() {
 
                 let id_avaliacao = avaliacoes
                     .iter()
-                    .find(|(id, nota, comentario)| format!("ID: {} | Nota: {} | Comentário: {}", id,nota, comentario.as_deref().unwrap_or("Sem comentário")) == escolha_avaliacao)
+                    .find(|(id, nota, comentario)| {
+                        format!(
+                            "ID: {} | Nota: {} | Comentário: {}",
+                            id,
+                            nota,
+                            comentario.as_deref().unwrap_or("Sem comentário")
+                        ) == escolha_avaliacao
+                    })
                     .map(|(id, _, _)| *id)
                     .unwrap();
 

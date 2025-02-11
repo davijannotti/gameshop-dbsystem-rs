@@ -173,7 +173,7 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
 
                 let id_avaliacao = avaliacoes
                     .iter()
-                    .find(|(id, jogo, _, _)| escolha_avaliacao.contains(jogo))
+                    .find(|(_id, jogo, _, _)| escolha_avaliacao.contains(jogo))
                     .map(|(id, _, _, _)| *id)
                     .unwrap();
 
@@ -208,7 +208,7 @@ pub fn menu_avaliacoes_comum(id_usuario_logado: i32) {
 
                 let id_avaliacao = avaliacoes
                     .iter()
-                    .find(|(id, jogo, _, _)| escolha_avaliacao.contains(jogo))
+                    .find(|(_id, jogo, _, _)| escolha_avaliacao.contains(jogo))
                     .map(|(id, _, _, _)| *id)
                     .unwrap();
 

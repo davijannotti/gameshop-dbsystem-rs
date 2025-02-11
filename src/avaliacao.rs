@@ -93,9 +93,11 @@ pub fn listar_avaliacoes_por_jogo(id_jogo: i32) -> Vec<(i32, i32, Option<String>
     ";
 
     let avaliacoes: Vec<(i32, i32, Option<String>)> = conn
-        .exec_map(query, (id_jogo,), |(id_avaliacao, id_usuario, comentario)| {
-            (id_avaliacao, id_usuario, comentario)
-        })
+        .exec_map(
+            query,
+            (id_jogo,),
+            |(id_avaliacao, id_usuario, comentario)| (id_avaliacao, id_usuario, comentario),
+        )
         .expect("Erro ao buscar avaliações do jogo");
 
     for (id_avaliacao, id_usuario, comentario) in &avaliacoes {
@@ -109,7 +111,6 @@ pub fn listar_avaliacoes_por_jogo(id_jogo: i32) -> Vec<(i32, i32, Option<String>
 
     avaliacoes
 }
-
 
 pub fn adicionar_avaliacao(id_usuario: i32, id_jogo: i32, nota: i32, comentario: Option<&str>) {
     let mut conn = conectar_mysql();
