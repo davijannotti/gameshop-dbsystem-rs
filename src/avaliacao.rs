@@ -45,6 +45,44 @@ pub fn listar_avaliacoes() {
     }
 }
 
+pub fn listar_avaliacoes_por_usuario(id_usuario: i32) -> Vec<(i32, String, i32, Option<String>)> {
+    let mut conn = conectar_mysql();
+
+    let query = "
+        SELECT 
+            a.id_avaliacao, 
+            j.titulo AS nome_jogo, 
+            a.nota, 
+            a.comentario
+        FROM Avaliacao a
+        JOIN Jogo j ON a.id_jogo = j.id_jogo
+        WHERE a.id_usuario = ?
+    ";
+
+    let avaliacoes: Vec<(i32, String, i32, Option<String>)> = conn
+        .exec_map(query, (id_usuario,), |(id, nome_jogo, nota, comentario)| {
+            (id, nome_jogo, nota, comentario)
+        })
+        .expect("Erro ao buscar avaliações do usuário");
+
+    if avaliacoes.is_empty() {
+        println!("Você ainda não fez nenhuma avaliação.");
+    } else {
+        println!("--- Suas Avaliações ---");
+        for (id, nome_jogo, nota, comentario) in &avaliacoes {
+            println!(
+                "ID: {} | Jogo: {} | Nota: {} | Comentário: {}",
+                id,
+                nome_jogo,
+                nota,
+                comentario.as_deref().unwrap_or("Sem comentário")
+            );
+        }
+    }
+
+    return avaliacoes;
+}
+
 pub fn adicionar_avaliacao(id_usuario: i32, id_jogo: i32, nota: i32, comentario: Option<&str>) {
     let mut conn = conectar_mysql();
     let query = "INSERT INTO Avaliacao (id_usuario, id_jogo, nota, comentario, data_avaliacao) VALUES (?, ?, ?, ?, NOW())";

@@ -1,25 +1,49 @@
 use crate::database::conectar_mysql;
 use mysql::prelude::*;
 
-pub fn listar_compras() {
+pub fn listar_compras() -> Vec<(i32, i32, String, String, f64, String)> {
     let mut conn = conectar_mysql();
-    let query =
-        "SELECT c.id_compra, c.id_usuario, j.titulo, c.data_compra, c.total, c.metodo_pagamento 
-                 FROM Compra c 
-                 JOIN Jogo j ON c.id_jogo = j.id_jogo";
+    
+    let query = "
+        SELECT c.id_compra, c.id_usuario, j.titulo, c.data_compra, c.total, c.metodo_pagamento 
+        FROM Compra c 
+        JOIN Jogo j ON c.id_jogo = j.id_jogo
+    ";
 
+    // Recupera as compras e as mapeia para o vetor
     let compras: Vec<(i32, i32, String, String, f64, String)> = conn
         .query_map(query, |(id, usuario, titulo, data, total, pagamento)| {
             (id, usuario, titulo, data, total, pagamento)
         })
         .expect("Erro ao buscar compras");
 
-    for (id, usuario, titulo, data, total, pagamento) in compras {
-        println!(
-            "ID: {} | Usuário: {} | Jogo: {} | Data: {} | Total: R${:.2} | Método: {}",
-            id, usuario, titulo, data, total, pagamento
-        );
+        for (id_compra, usuario,titulo,data,total, pagamento) in &compras {
+            println!("ID da Compra: {} | ID do Usuário: {} |  Titulo: {} | Data: {} | Preço R$: {} | Pagamento: {} |", id_compra, usuario, titulo, data, total, pagamento);
+        }
+
+    // Retorna o vetor de compras
+    compras
+}
+
+
+pub fn listar_compras_por_usuario(id_usuario: i32) -> Vec<(i32, String)> {
+    let mut conn = conectar_mysql();
+
+    let query = "SELECT c.id_jogo, j.titulo FROM Compra c
+                 JOIN Jogo j ON c.id_jogo = j.id_jogo
+                 WHERE c.id_usuario = ?";
+
+    let compras: Vec<(i32, String)> = conn
+        .exec_map(query, (id_usuario,), |(id_jogo, titulo_jogo)| {
+            (id_jogo, titulo_jogo)
+        })
+        .expect("Erro ao buscar compras do usuário");
+
+    for (id_jogo, titulo_jogo) in &compras {
+        println!("ID do Jogo: {} | Nome do Jogo: {}", id_jogo, titulo_jogo);
     }
+
+    return compras;
 }
 
 pub fn adicionar_compra(id_usuario: i32, id_jogo: i32, total: f64, metodo_pagamento: &str) {

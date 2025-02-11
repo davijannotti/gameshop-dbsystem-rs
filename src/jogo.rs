@@ -1,25 +1,47 @@
 use crate::database::conectar_mysql;
 use mysql::prelude::*;
 
-pub fn listar_jogos() {
+pub fn listar_jogos() -> Vec<(i32, String, f64, String)> {
     let mut conn = conectar_mysql();
-    let query = "SELECT id_jogo, titulo, preco FROM Jogo";
+    let query = "SELECT id_jogo, titulo, preco, data_lancamento FROM Jogo";
 
-    let jogos: Vec<(i32, String, f64)> = conn
-        .query_map(query, |(id, titulo, preco)| (id, titulo, preco))
+    let jogos: Vec<(i32, String, f64, String)> = conn
+        .query_map(query, |(id, titulo, preco, data_lancamento)| {
+            (id, titulo, preco, data_lancamento)
+        })
         .expect("Erro ao buscar jogos");
 
-    for (id, titulo, preco) in jogos {
-        println!("ID: {} | Título: {} | Preço: R${:.2}", id, titulo, preco);
+    if jogos.is_empty() {
+        println!("Nenhum jogo disponível para compra.");
+    } else {
+        println!("--- Jogos Disponíveis para Compra ---");
+        for (id, titulo, preco, data_lancamento) in &jogos {
+            println!(
+                "ID: {} | Título: {} | Preço: {} | Data de Lançamento: {}",
+                id, titulo, preco, data_lancamento
+            );
+        }
     }
+
+    jogos
 }
 
-pub fn adicionar_jogo(titulo: &str, descricao: &str, desenvolvedor: &str, preco: f64) {
+pub fn adicionar_jogo(
+    titulo: &str,
+    descricao: &str,
+    desenvolvedor: &str,
+    preco: f64,
+    data_lancamento: &str,
+) {
     let mut conn = conectar_mysql();
-    let query = "INSERT INTO Jogo (titulo, descricao, desenvolvedor, preco) VALUES (?, ?, ?, ?)";
 
-    conn.exec_drop(query, (titulo, descricao, desenvolvedor, preco))
-        .expect("Erro ao inserir jogo");
+    let query = "INSERT INTO Jogo (titulo, descricao, desenvolvedor, data_lancamento, preco) VALUES (?, ?, ?, ?, ?)";
+
+    conn.exec_drop(
+        query,
+        (titulo, descricao, desenvolvedor, data_lancamento, preco),
+    )
+    .expect("Erro ao inserir jogo");
 
     println!("✅ Jogo cadastrado com sucesso!");
 }
@@ -30,13 +52,28 @@ pub fn atualizar_jogo(
     descricao: &str,
     desenvolvedor: &str,
     preco: f64,
+    data_lancamento: &str, // Adicionando o parâmetro para a data de lançamento
 ) {
     let mut conn = conectar_mysql();
-    let query =
-        "UPDATE Jogo SET titulo = ?, descricao = ?, desenvolvedor = ?, preco = ? WHERE id_jogo = ?";
 
-    conn.exec_drop(query, (titulo, descricao, desenvolvedor, preco, id_jogo))
-        .expect("Erro ao atualizar jogo");
+    let query = "
+        UPDATE Jogo 
+        SET titulo = ?, descricao = ?, desenvolvedor = ?, preco = ?, data_lancamento = ? 
+        WHERE id_jogo = ?
+    ";
+
+    conn.exec_drop(
+        query,
+        (
+            titulo,
+            descricao,
+            desenvolvedor,
+            preco,
+            data_lancamento,
+            id_jogo,
+        ),
+    )
+    .expect("Erro ao atualizar jogo");
 
     println!("✅ Jogo atualizado com sucesso!");
 }
